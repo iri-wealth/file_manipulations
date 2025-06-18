@@ -1,18 +1,33 @@
-import FreeSimpleGUI as sg #widget creation for GUI, third-party library
-label1 = sg.Text(text='Select files to compress:')
-input1 = sg.Input()
-choose_button1 = sg.FilesBrowse('Choose files')
+import FreeSimpleGUI as sg
+from zip_creator import make_archive
 
-label2 = sg.Text(text='Select destination folder:')
-input2 = sg.Input()
-choose_button2 = sg.FolderBrowse('Choose folder')
+# Create the window layout
+layout = [
+    [sg.Text("Select files to compress:")],
+    [sg.Input(key="-FILES-"), sg.FilesBrowse("Choose")],
+    [sg.Text("Select destination folder:")],
+    [sg.Input(key="-FOLDER-"), sg.FolderBrowse("Choose")],
+    [sg.Button("Compress"), sg.Button("Exit")]
+]
 
+# Create the window
+window = sg.Window("File Compressor", layout)
 
-compress_button = sg.Button('Compress')
-window = sg.Window('File Compressor',
-                    layout=[[label1, input1, choose_button1],
-                            [label2, input2, choose_button2],
-                            [compress_button]])
+# Event loop
+while True:
+    event, values = window.read()
 
-window.read()
+    if event == sg.WINDOW_CLOSED or event == "Exit":
+        break
+    
+    if event == "Compress":
+        filepaths = values["-FILES-"].split(";")
+        folder = values["-FOLDER-"]
+        
+        try:
+            archive_path = make_archive(filepaths, folder)
+            sg.popup(f"Archive created successfully!\nSaved at: {archive_path}")
+        except Exception as e:
+            sg.popup_error(f"An error occurred: {str(e)}")
+
 window.close()
